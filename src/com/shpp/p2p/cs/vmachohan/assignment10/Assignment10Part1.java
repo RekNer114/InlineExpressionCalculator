@@ -6,8 +6,9 @@ import java.util.HashMap;
 public class Assignment10Part1 {
 
     public static void main(String[] args) {
-        args = new String[]{"-2^(-b)-9^(a)+6/0", "a=5", "b=-6"};
-        args = new String[]{"-2^2 + a/(-3)", "a=9"};
+        args = new String[]{"-(-(-a))+6/0", "a=2", "b=2"};
+        //args = new String[]{"-a*2", "a=b", "b=c" , "c=1"};
+
         if (args.length == 0) {
             System.out.println("No expression!");
             return;
@@ -25,11 +26,14 @@ public class Assignment10Part1 {
             double result;
             // collect other parameters in hashmap if they are present
             if (args.length > 1) {
-                HashMap<String, Double> vars = FormulaParser.collectArguments(args);
+                HashMap<String, String> vars = FormulaParser.collectArguments(args);
+
                 tokens = FormulaParser.injectUnknowns(vars, tokens);
                 System.out.println(tokens);
+
                 boolean hasUnknown = FormulaParser.hasUnknown(tokens);
                 System.out.println(hasUnknown);
+
                 result = getResult(hasUnknown, tokens);
             } else {
                 boolean hasUnknown = FormulaParser.hasUnknown(tokens);
@@ -43,6 +47,13 @@ public class Assignment10Part1 {
     }
 
 
+    /**
+     *
+     * @param hasUnknown show if there is  any unknown variable in the tokens list
+     * @param tokens tokens of the expression
+     * @return result of the math expression
+     * @throws Exception
+     */
     static double getResult(boolean hasUnknown, ArrayList<String> tokens) throws Exception {
         FormulaCalculator calc = new FormulaCalculator();
         double res;

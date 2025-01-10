@@ -42,6 +42,7 @@ public class FormulaParser {
         ArrayList<String> res = new ArrayList<>();
         //builder to save complicated numbers (floats, doubles)
         StringBuilder temp = new StringBuilder();
+
         char[] expresionArr = expresion.toCharArray();
 
         boolean lastWasOperator = false;
@@ -62,7 +63,8 @@ public class FormulaParser {
                 //if it's other sign, like operators
                 if (!temp.isEmpty() ||  c==')'){
                     //add temp to the arraylist result
-                    res.add(temp.toString());
+                    if(!temp.isEmpty())
+                        res.add(temp.toString());
                     //and reset temp stringbuilder;
                     temp.setLength(0);
                 }
@@ -92,9 +94,9 @@ public class FormulaParser {
      * @param args input array of string with parameters
      * @return HashMap<String, Double> where key is variable name and value is a double
      */
-    public static HashMap<String, Double> collectArguments(String[] args) {
+    public static HashMap<String, String> collectArguments(String[] args) {
         // hashmap to stack variables from the parameters
-        HashMap<String, Double> vars = new HashMap<>();
+        HashMap<String, String> vars = new HashMap<>();
 
         // proccess other parameters if present
         // start from 1, 'cause args[0[] is expresion
@@ -109,7 +111,7 @@ public class FormulaParser {
                 return null;
             }
 
-            vars.put(partsOfParameter[0], Double.parseDouble(partsOfParameter[1]));
+            vars.put(partsOfParameter[0], partsOfParameter[1]);
 
         }
         return vars;
@@ -118,14 +120,14 @@ public class FormulaParser {
 
     /**
      *
-     * @param tokens ArrayList<String> with tokenized expresion
+     * @param tokens ArrayList<String> with tokenized expression
      * @return true if there is any unknown variable
      */
     public static boolean hasUnknown(ArrayList<String> tokens) {
         //using stream api, to find any element that contains letter
         return tokens
                 .stream()
-                .anyMatch(s -> !isOperator(s) && (s.matches("-[a-zA-Z]+") || s.matches("[a-zA-z]")));
+                .anyMatch(s -> (s.matches("-?[a-zA-Z]+")));
     }
 
     /**
@@ -136,25 +138,15 @@ public class FormulaParser {
      * @param tokens ArrayList<String> that represents tokenized expression
      * @return arraylist that represents expression, with changed variables to numbers.
      */
-    public static ArrayList<String> injectUnknowns(HashMap<String, Double> vars, ArrayList<String> tokens) {
-        //result arraylist
-        ArrayList<String> res =  new ArrayList<>();
-        //go through each token
-        for(String t : tokens){
-            //if there is such key in the map with vars
-            if(vars.containsKey(t)){
-                //add value of that key to the result instead of the original letter
-                res.add(String.valueOf(vars.get(t)));
-            } else if (t.startsWith("-") && vars.containsKey(t.substring(1))) {
-                double value = -vars.get(t.substring(1));
-                res.add(String.valueOf(value));
-            } else{
-                //add old value, 'cause there no such key
-                res.add(t);
-            }
+    public static ArrayList<String> injectUnknowns(HashMap<String, String> vars, ArrayList<String> tokens) {
+        for(String k : vars.keySet()){
+            tokens.replaceAll(s-> s.contains(k) ?
+                    (s.charAt(0) =='-') ?  String.valueOf(-Double.parseDouble(vars.get(k)))
+                            :s.replaceAll(k, vars.get(k)): s);
         }
-        return res;
+        return tokens;
     }
+
 
     /**
      * Method return if token that was passed it operator, by evalueting it with

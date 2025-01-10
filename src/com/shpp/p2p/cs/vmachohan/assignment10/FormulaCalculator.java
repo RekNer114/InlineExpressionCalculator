@@ -20,6 +20,7 @@ public class FormulaCalculator {
         expression = reversePolishNotationConverter(expression);
         //solving stack
         Stack<String> solve = new Stack<>();
+
         //go through each token in expression
         for (String s : expression) {
             System.out.println(solve);
@@ -60,7 +61,12 @@ public class FormulaCalculator {
             case "+" -> b + a;
             case "-" -> b - a;
             case "*" -> b * a;
-            case "/" -> b / a;
+            case "/" -> {
+                if(a==0)
+                    throw new IllegalArgumentException("can't divide by 0");
+                else
+                    yield b/a;
+            }
             case "^" -> Math.pow(b, a);
             default -> throw new IllegalArgumentException("Invalid operator: " + operator);
         };
@@ -68,7 +74,7 @@ public class FormulaCalculator {
 
     /**
      * Method to make calculation simpler, cause of reverse polish notation,
-     * it will be esier to calculate expression in right order.
+     * it will be easier to calculate expression in right order.
      * (
      * Source: <a href="https://en.wikipedia.org/wiki/Reverse_Polish_notation">...</a>
      * )
