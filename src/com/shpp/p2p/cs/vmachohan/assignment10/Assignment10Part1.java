@@ -6,9 +6,6 @@ import java.util.HashMap;
 public class Assignment10Part1 {
 
     public static void main(String[] args) {
-        args = new String[]{"-(-(-a))+6/0", "a=2", "b=2"};
-        //args = new String[]{"-a*2", "a=b", "b=c" , "c=1"};
-
         if (args.length == 0) {
             System.out.println("No expression!");
             return;
@@ -17,10 +14,14 @@ public class Assignment10Part1 {
         // read expression from the first parameter and remove spaces for easier
         // processing
         String expression = args[0].replaceAll("\\s+", "");
-
-        //separated operands and operation
-        ArrayList<String> tokens = FormulaParser.checkAndTokenizeExpression(expression);
-        System.out.println(tokens);
+        ArrayList<String> tokens;
+        if(FormulaParser.checkAndTokenizeExpression(expression)) {
+            //separated operands and operation
+            tokens= FormulaParser.separateValues(expression);
+            System.out.println(tokens);
+        }else{
+            return;
+        }
 
         try {
             double result;
@@ -61,7 +62,7 @@ public class Assignment10Part1 {
             throw new Exception("\"can't calculate 'cause present unknown vars\"");
         } else {
             res = calc.calculate(tokens);
-            System.out.println("Resul: " + res);
+            System.out.println("Result: " + res);
         }
         return res;
     }

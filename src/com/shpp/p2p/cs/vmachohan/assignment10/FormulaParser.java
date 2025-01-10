@@ -15,21 +15,81 @@ public class FormulaParser {
      * @param expression string that contains expression from the user
      * @return ArrayList<String> with each token of the input string
      */
-    public static ArrayList<String> checkAndTokenizeExpression(String expression) {
+    public static boolean checkAndTokenizeExpression(String expression) {
         //case when expression is empty
         if (expression == null || expression.isEmpty()) {
             System.out.println("No formula present!");
-            return new ArrayList<>();
+            return false;
         }
 
-        //case if expression has wrong symbols
-        if (!expression.matches("[a-zA-Z0-9+\\-*/^(). ]+")) {
-            System.out.println("Miss input");
-            return new ArrayList<>();
-        }
+        char[] expressionChars = expression.toCharArray();
+        int openBracesCount = 0;
+        boolean lastWasOperator = false;
 
+        //check all characters in expresion
+        for(int i = 0; i<expressionChars.length; i++){
+            //if current char is open braces
+            if(expressionChars[i] == '('){
+                //add braces counter
+                openBracesCount++;
+                //if character before this was a number or variable
+                if (i > 0 && (Character.isLetterOrDigit(expressionChars[i - 1]))) {
+                    //return false 'cause wrong notation
+                    return false;
+                }
+            }
+            //if closing braces
+            if(expressionChars[i] == ')') {
+                //remove 1 from openBracesCount, 'cause 1 opened brace was closed
+                openBracesCount--;
+                //is next char is number or variable
+                if (i < expressionChars.length - 1 && (Character.isLetterOrDigit(expressionChars[i + 1]))) {
+                    //return false, 'cause wrong notation
+                    return false;
+                }
+            }
+            //if there is negative value of open braces, then we have one not needed closing brace
+            if(openBracesCount <0)
+                return false;
+
+            //if it's just empty braces - wrong notation
+            if (i > 0 && expressionChars[i - 1] == '(' && expressionChars[i + 1] == ')') {
+                return false;
+            }
+
+            //if current char is operator
+            if(isOperator(String.valueOf(expressionChars[i]))){
+               if(!isCorrectOperatorsNotation(i, expressionChars, lastWasOperator)){
+                   return false;
+               }
+                //change that last char was operator
+                lastWasOperator = true;
+            }else {
+                //change that last char wasn't operator
+                lastWasOperator = false;
+            }
+        }
         //return separated arraylist
-        return separateValues(expression);
+        return openBracesCount == 0;
+    }
+
+    /**
+     *
+     * @param i
+     * @param expressionChars
+     * @param lastWasOperator
+     * @return
+     */
+    private static boolean isCorrectOperatorsNotation(int i, char[] expressionChars, boolean lastWasOperator) {
+        //check if it's in the end of the string
+        if(i == expressionChars.length-1){
+            return false;
+        }
+        //if previous char was operator, that means, here is 2 operators in the row (wrong notation)
+        if (i > 0 && lastWasOperator) {
+            return false;
+        }
+      return true;
     }
 
     /**
@@ -37,7 +97,7 @@ public class FormulaParser {
      * @param expresion string that represents expresion
      * @return ArrayList<String> with each token of the input string
      */
-    private static ArrayList<String> separateValues(String expresion) {
+    public static ArrayList<String> separateValues(String expresion) {
         //final arraylist that'll be returned
         ArrayList<String> res = new ArrayList<>();
         //builder to save complicated numbers (floats, doubles)
@@ -53,7 +113,7 @@ public class FormulaParser {
 
             //if it's letter or digit(in other words, not operator)
             if (Character.isLetterOrDigit(c) || c == '.') {
-                //append it to the stringbuilder
+                //append it to the string builder
                 temp.append(c);
                 lastWasOperator = false;
             } else if (lastWasOperator && isOperator(String.valueOf(c))) {
@@ -98,10 +158,10 @@ public class FormulaParser {
         // hashmap to stack variables from the parameters
         HashMap<String, String> vars = new HashMap<>();
 
-        // proccess other parameters if present
+        // process other parameters if present
         // start from 1, 'cause args[0[] is expresion
         for (int i = 1; i < args.length; i++) {
-            // split name of the variable and it's value
+            // split name of the variable, and it's value
             //used replaceAll instead of trim(), cause here was some problems
             String parameter = args[i].replaceAll("\\s", "");
             String[] partsOfParameter = parameter.split("=");
@@ -129,6 +189,7 @@ public class FormulaParser {
                 .stream()
                 .anyMatch(s -> (s.matches("-?[a-zA-Z]+")));
     }
+
 
     /**
      * Method to remove all unknown variables from expression with their value from parameters
