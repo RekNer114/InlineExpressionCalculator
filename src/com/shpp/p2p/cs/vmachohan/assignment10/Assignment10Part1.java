@@ -6,6 +6,7 @@ import java.util.HashMap;
 public class Assignment10Part1 {
 
     public static void main(String[] args) {
+        args = new String[]{"2^3-a+a", "a=2"};
         if (args.length == 0) {
             System.out.println("No expression!");
             return;
@@ -15,9 +16,9 @@ public class Assignment10Part1 {
         // processing
         String expression = args[0].replaceAll("\\s+", "");
         ArrayList<String> tokens;
-        if(FormulaParser.checkAndTokenizeExpression(expression)) {
+        if(ArgumentsProcessor.isExpressionCorrect(expression)) {
             //separated operands and operation
-            tokens= FormulaParser.separateValues(expression);
+            tokens= ArgumentsProcessor.separateValues(expression);
             System.out.println(tokens);
         }else{
             return;
@@ -27,17 +28,17 @@ public class Assignment10Part1 {
             double result;
             // collect other parameters in hashmap if they are present
             if (args.length > 1) {
-                HashMap<String, String> vars = FormulaParser.collectArguments(args);
+                HashMap<String, String> vars = ArgumentsProcessor.collectArguments(args);
 
-                tokens = FormulaParser.injectUnknowns(vars, tokens);
+                tokens = ArgumentsProcessor.injectUnknowns(vars, tokens);
                 System.out.println(tokens);
 
-                boolean hasUnknown = FormulaParser.hasUnknown(tokens);
+                boolean hasUnknown = ArgumentsProcessor.hasUnknown(tokens);
                 System.out.println(hasUnknown);
 
                 result = getResult(hasUnknown, tokens);
             } else {
-                boolean hasUnknown = FormulaParser.hasUnknown(tokens);
+                boolean hasUnknown = ArgumentsProcessor.hasUnknown(tokens);
                 result = getResult(hasUnknown, tokens);
             }
 

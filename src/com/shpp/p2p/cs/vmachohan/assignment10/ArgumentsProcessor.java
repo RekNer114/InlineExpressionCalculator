@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
- * Class that contains useful functions to process input data
+ * Class that contains methods to process input data
  * (tokenize expression, collect parameters, inject parameters into expression)
  */
-public class FormulaParser {
+public class ArgumentsProcessor {
     /**
      * Method to check if expression was written in the right way, and if so, return
      * arraylist with every token from current string
@@ -15,35 +15,42 @@ public class FormulaParser {
      * @param expression string that contains expression from the user
      * @return ArrayList<String> with each token of the input string
      */
-    public static boolean checkAndTokenizeExpression(String expression) {
+    public static boolean isExpressionCorrect(String expression) {
         //case when expression is empty
         if (expression == null || expression.isEmpty()) {
             System.out.println("No formula present!");
             return false;
         }
 
-        char[] expressionChars = expression.toCharArray();
-        int openBracesCount = 0;
-        boolean lastWasOperator = false;
+        //checks if first operator minus(if operator)
+        //if it's any other operator than '-', it's wrong notation
+        if(expression.charAt(0)!='-' && isOperator(String.valueOf(expression.charAt(0)))){
+            System.out.println("Wrong operator at the start!");
+            return false;
+        }
 
-        //check all characters in expresion
-        for(int i = 0; i<expressionChars.length; i++){
+        int openBracesCount = 0;
+
+        //check all characters in expression
+        for(int i = 0; i<expression.length(); i++){
+            char c = expression.charAt(i);
+
             //if current char is open braces
-            if(expressionChars[i] == '('){
+            if(c == '('){
                 //add braces counter
                 openBracesCount++;
                 //if character before this was a number or variable
-                if (i > 0 && (Character.isLetterOrDigit(expressionChars[i - 1]))) {
+                if (i > 0 && (Character.isLetterOrDigit(expression.charAt(i - 1)))) {
                     //return false 'cause wrong notation
                     return false;
                 }
             }
             //if closing braces
-            if(expressionChars[i] == ')') {
+            if(c == ')') {
                 //remove 1 from openBracesCount, 'cause 1 opened brace was closed
                 openBracesCount--;
                 //is next char is number or variable
-                if (i < expressionChars.length - 1 && (Character.isLetterOrDigit(expressionChars[i + 1]))) {
+                if (i < expression.length() - 1 && (Character.isLetterOrDigit(expression.charAt(i + 1)))) {
                     //return false, 'cause wrong notation
                     return false;
                 }
@@ -53,20 +60,15 @@ public class FormulaParser {
                 return false;
 
             //if it's just empty braces - wrong notation
-            if (i > 0 && expressionChars[i - 1] == '(' && expressionChars[i + 1] == ')') {
+            if (i > 0 && expression.charAt(i - 1) == '(' && expression.charAt(i + 1) == ')') {
                 return false;
             }
 
             //if current char is operator
-            if(isOperator(String.valueOf(expressionChars[i]))){
-               if(!isCorrectOperatorsNotation(i, expressionChars, lastWasOperator)){
+            if(isOperator(String.valueOf(expression.charAt(i)))){
+               if(!isCorrectOperatorsNotation(i, expression)){
                    return false;
                }
-                //change that last char was operator
-                lastWasOperator = true;
-            }else {
-                //change that last char wasn't operator
-                lastWasOperator = false;
             }
         }
         //return separated arraylist
@@ -75,68 +77,53 @@ public class FormulaParser {
 
     /**
      *
-     * @param i
-     * @param expressionChars
-     * @param lastWasOperator
-     * @return
+     * @param i index of current char
+     * @param expression char array that represents expression
+     * @return true if operators is written without mistakes
      */
-    private static boolean isCorrectOperatorsNotation(int i, char[] expressionChars, boolean lastWasOperator) {
-        //check if it's in the end of the string
-        if(i == expressionChars.length-1){
-            return false;
-        }
-        //if previous char was operator, that means, here is 2 operators in the row (wrong notation)
-        if (i > 0 && lastWasOperator) {
-            return false;
-        }
-      return true;
+    private static boolean isCorrectOperatorsNotation(int i, String expression) {
+        //check if previous character is operator
+        boolean lastWasOperator = isOperator(String.valueOf(expression.charAt(i-1)));
+
+        return !lastWasOperator || i!=expression.length()-1;
     }
 
     /**
      * Divide string into tokens and save them in arraylist
-     * @param expresion string that represents expresion
+     * @param expression string that represents expression
      * @return ArrayList<String> with each token of the input string
      */
-    public static ArrayList<String> separateValues(String expresion) {
+    public static ArrayList<String> separateValues(String expression) {
         //final arraylist that'll be returned
         ArrayList<String> res = new ArrayList<>();
         //builder to save complicated numbers (floats, doubles)
         StringBuilder temp = new StringBuilder();
 
-        char[] expresionArr = expresion.toCharArray();
+        char[] expressionCharArray = expression.toCharArray();
 
-        boolean lastWasOperator = false;
-
-        //go through each char of the expresion string
-        for (int i = 0; i<expresionArr.length; i++) {
-            char c = expresionArr[i];
+        //go through each char of the expression string
+        for (int i = 0; i<expression.length(); i++) {
+            char c = expression.charAt(i);
 
             //if it's letter or digit(in other words, not operator)
             if (Character.isLetterOrDigit(c) || c == '.') {
                 //append it to the string builder
                 temp.append(c);
-                lastWasOperator = false;
-            } else if (lastWasOperator && isOperator(String.valueOf(c))) {
-                System.out.println("Wrong notation!");
-                return null;
-            } else {
+            }else {
                 //if it's other sign, like operators
                 if (!temp.isEmpty() ||  c==')'){
                     //add temp to the arraylist result
                     if(!temp.isEmpty())
                         res.add(temp.toString());
-                    //and reset temp stringbuilder;
+                    //and reset temp string builder;
                     temp.setLength(0);
                 }
-                if(((i == 0 || expresionArr[i-1]=='(')) &&  c == '-'){
+                if(((i == 0 || expressionCharArray[i-1]=='(')) &&  c == '-'){
                     temp.append(c);
-                    continue;
                 }else {
                     //and add current element
                     res.add(String.valueOf(c));
                 }
-
-                lastWasOperator = isOperator(String.valueOf(c));
             }
 
         }
@@ -177,7 +164,6 @@ public class FormulaParser {
         return vars;
     }
 
-
     /**
      *
      * @param tokens ArrayList<String> with tokenized expression
@@ -190,7 +176,6 @@ public class FormulaParser {
                 .anyMatch(s -> (s.matches("-?[a-zA-Z]+")));
     }
 
-
     /**
      * Method to remove all unknown variables from expression with their value from parameters
      * (if present)
@@ -200,7 +185,10 @@ public class FormulaParser {
      * @return arraylist that represents expression, with changed variables to numbers.
      */
     public static ArrayList<String> injectUnknowns(HashMap<String, String> vars, ArrayList<String> tokens) {
+        //go through keys
         for(String k : vars.keySet()){
+            //replace character in each string of the list which equals to this key with variable value.
+            //if string contains '-' at the start, replace value of the variable with it's negative value.
             tokens.replaceAll(s-> s.contains(k) ?
                     (s.charAt(0) =='-') ?  String.valueOf(-Double.parseDouble(vars.get(k)))
                             :s.replaceAll(k, vars.get(k)): s);

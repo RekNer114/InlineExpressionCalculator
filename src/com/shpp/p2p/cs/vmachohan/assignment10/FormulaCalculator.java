@@ -25,7 +25,7 @@ public class FormulaCalculator {
         for (String s : expression) {
             System.out.println(solve);
             //if element isn't an operator we push it to solve stack
-            if (!FormulaParser.isOperator(s)) {
+            if (!ArgumentsProcessor.isOperator(s)) {
                 solve.push(s);
             } else {
                 //if there is only 1 element left in the stack
@@ -92,7 +92,7 @@ public class FormulaCalculator {
         // go through each element of the expression
         for (String s : expression) {
             // if it's not operator and "("
-            if (!FormulaParser.isOperator(s) && !s.equals("(") && !s.equals(")")) {
+            if (!ArgumentsProcessor.isOperator(s) && !s.equals("(") && !s.equals(")")) {
                 // we add it to the result
                 out.add(s);
                 // if it's "(" we add it to the stack as a break point for situation when we'll
